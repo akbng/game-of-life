@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game of Life</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <!-- <div class="parent"></div> -->
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="clear">Clear</button>
+  </body>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const boxWidth = 10;
+    const numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
+    const numberOfVerticalBox = Math.floor(canvasHeight / boxWidth);
+
+    let table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
+      Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
+    );
+
+    const button = document.getElementById("start");
+
+    let running = null;
+
+    function startSimulation() {
+      draw(nextGeneration(table));
+      table = nextGeneration(table);
+    }
+
+    button.addEventListener("click", (event) => {
+      console.log(running);
+      if (running) {
+        clearInterval(running);
+        running = null;
+      } else running = setInterval(startSimulation, 325);
+    });
+
+    canvas.addEventListener("mousedown", (event) => {
+      const x = Math.floor(event.offsetX / boxWidth);
+      const y = Math.floor(event.offsetY / boxWidth);
+      table[y][x] = 1;
+      draw(table);
+    });
+
+    function draw(arr) {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.strokeStyle = "#003049";
+      ctx.fillStyle = "#d62828";
+      arr.forEach((array, i) => {
+        array.forEach((element, j) => {
+          if (!element)
+            ctx.strokeRect(j * boxWidth, i * boxWidth, boxWidth, boxWidth);
+          else ctx.fillRect(j * boxWidth, i * boxWidth, boxWidth, boxWidth);
+        });
+      });
+    }
+
+    function countLiveNeighbors(x, y, table) {
+      let count = 0;
+      for (
+        let i = Math.max(0, x - 1);
+        i <= Math.min(numberOfVerticalBox - 1, x + 1);
+        i++
+      ) {
+        for (
+          let j = Math.max(0, y - 1);
+          j <= Math.min(numberOfHorizontalBox - 1, y + 1);
+          j++
+        ) {
+          if (table[i][j] === 0 || (i === x && j === y)) continue;
+          count++;
+        }
+      }
+      return count;
+    }
+
+    function nextGeneration(table) {
+      const grid = Array.from(new Array(numberOfHorizontalBox).keys()).map(
+        (_) => Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
+      );
+      for (let i = 0; i < numberOfVerticalBox; i++) {
+        for (let j = 0; j < numberOfHorizontalBox; j++) {
+          const neighbors = countLiveNeighbors(i, j, table);
+          if (neighbors < 2 || neighbors > 3) grid[i][j] = 0;
+          else if (neighbors === 2) grid[i][j] = table[i][j];
+          else grid[i][j] = 1;
+        }
+      }
+      return grid;
+    }
+
+    draw(table);
+  </script>
+  <!-- <script src="game.js"></script> -->
+</html>
