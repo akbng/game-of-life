@@ -31,6 +31,7 @@
     const clearButton = document.getElementById("clear");
 
     let running = null;
+    let painting = false;
 
     function startSimulation() {
       draw(nextGeneration(table));
@@ -38,7 +39,6 @@
     }
 
     startButton.addEventListener("click", (event) => {
-      console.log(running);
       if (running) return;
 
       running = setInterval(startSimulation, 100);
@@ -47,7 +47,6 @@
     });
 
     stopButton.addEventListener("click", (event) => {
-      console.log(running);
       if (!running) return;
       clearInterval(running);
       running = null;
@@ -63,10 +62,23 @@
     });
 
     canvas.addEventListener("mousedown", (event) => {
+      painting = true;
       const x = Math.floor(event.offsetX / boxWidth);
       const y = Math.floor(event.offsetY / boxWidth);
       table[y][x] = 1;
       draw(table);
+    });
+
+    canvas.addEventListener("mousemove", (event) => {
+      if (!painting) return;
+      const x = Math.floor(event.offsetX / boxWidth);
+      const y = Math.floor(event.offsetY / boxWidth);
+      table[y][x] = 1;
+      draw(table);
+    });
+
+    canvas.addEventListener("mouseup", (event) => {
+      painting = false;
     });
 
     function draw(arr) {
