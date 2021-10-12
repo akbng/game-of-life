@@ -10,9 +10,15 @@
   <body>
     <canvas id="canvas" width="400" height="400"></canvas>
     <!-- <div class="parent"></div> -->
-    <button class="btn start">Start</button>
-    <button class="btn stop" disabled>Stop</button>
-    <button class="btn clear">Clear</button>
+    <div class="buttons">
+      <button class="btn start">Start</button>
+      <button class="btn stop" disabled>Stop</button>
+      <button class="btn clear">Clear</button>
+    </div>
+    <div class="range-slider">
+      <input type="range" id="range" min="1" max="100" value="10" />
+      <div class="range-value">100s</div>
+    </div>
   </body>
   <script src="game.js"></script>
 </html>

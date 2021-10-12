@@ -7,6 +7,17 @@
   font-family: "Montserrat", sans-serif;
 }
 
+.buttons {
+  width: calc(100vw - 40px);
+  max-width: 300px;
+  margin: 20px;
+  display: flex;
+  justify-content: space-around;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .btn {
   padding: 0.74em 1.2em;
   width: 80px;
@@ -15,20 +26,12 @@
   color: #003049;
   background-color: #e5e5e5;
   box-shadow: none;
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  z-index: 100;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
-.start {
-  z-index: 1000;
-  animation: grow-out 1s ease-in 5s reverse both;
-}
-
-.clear {
-  animation: slide 1s ease-in 5s reverse both;
+.btn:disabled {
+  cursor: not-allowed;
 }
 
 canvas {
@@ -36,25 +39,6 @@ canvas {
   margin: 20px;
 }
 
-@keyframes grow-out {
-  0% {
-    width: 80px;
-    visibility: visible;
-  }
-  75% {
-    visibility: hidden;
-  }
-  100% {
-    width: 240px;
-    visibility: hidden;
-  }
-}
-
-@keyframes slide {
-  0% {
-    left: 20px;
-  }
-  100% {
-    left: 180px;
-  }
+#range {
+  width: 400px;
 }

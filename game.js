@@ -131,9 +131,19 @@ let table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
 const startButton = document.querySelector(".start");
 const stopButton = document.querySelector(".stop");
 const clearButton = document.querySelector(".clear");
+const slider = document.querySelector("#range");
+
+const timeoutValue = document.querySelector(".range-value");
 
 let running = null;
 let painting = false;
+let timeout = slider.value;
+let cellColor = "#d62828";
+
+slider.addEventListener("input", (event) => {
+  timeout = event.target.value * 10;
+  timeoutValue.innerText = timeout + "s";
+});
 
 function startSimulation() {
   draw(nextGeneration(table));
@@ -143,7 +153,7 @@ function startSimulation() {
 startButton.addEventListener("click", (event) => {
   if (running) return;
 
-  running = setInterval(startSimulation, 100);
+  running = setInterval(startSimulation, timeout);
   startButton.disabled = true;
   stopButton.disabled = false;
 });
@@ -161,6 +171,10 @@ clearButton.addEventListener("click", (event) => {
     Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
   );
   draw(table);
+  clearInterval(running);
+  running = null;
+  startButton.disabled = false;
+  stopButton.disabled = true;
 });
 
 canvas.addEventListener("mousedown", (event) => {
@@ -185,7 +199,7 @@ canvas.addEventListener("mouseup", (event) => {
 
 function draw(arr) {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  ctx.fillStyle = "#d62828";
+  ctx.fillStyle = cellColor;
   arr.forEach((array, i) => {
     array.forEach((element, j) => {
       if (element) ctx.fillRect(j * boxWidth, i * boxWidth, boxWidth, boxWidth);
