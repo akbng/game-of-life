@@ -10,7 +10,7 @@
     <canvas id="canvas" width="400" height="400"></canvas>
     <!-- <div class="parent"></div> -->
     <button id="start">Start</button>
-    <button id="stop">Stop</button>
+    <button id="stop" disabled>Stop</button>
     <button id="clear">Clear</button>
   </body>
   <script>
@@ -26,7 +26,9 @@
       Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
     );
 
-    const button = document.getElementById("start");
+    const startButton = document.getElementById("start");
+    const stopButton = document.getElementById("stop");
+    const clearButton = document.getElementById("clear");
 
     let running = null;
 
@@ -35,12 +37,29 @@
       table = nextGeneration(table);
     }
 
-    button.addEventListener("click", (event) => {
+    startButton.addEventListener("click", (event) => {
       console.log(running);
-      if (running) {
-        clearInterval(running);
-        running = null;
-      } else running = setInterval(startSimulation, 325);
+      if (running) return;
+
+      running = setInterval(startSimulation, 100);
+      startButton.disabled = true;
+      stopButton.disabled = false;
+    });
+
+    stopButton.addEventListener("click", (event) => {
+      console.log(running);
+      if (!running) return;
+      clearInterval(running);
+      running = null;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    });
+
+    clearButton.addEventListener("click", (event) => {
+      table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
+        Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
+      );
+      draw(table);
     });
 
     canvas.addEventListener("mousedown", (event) => {
