@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+.btn {
+  padding: 0.74em 1.2em;
+  width: 80px;
+  border: 1px solid #003049;
+  border-radius: 4px;
+  color: #003049;
+  background-color: #e5e5e5;
+  box-shadow: none;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 100;
+  text-transform: uppercase;
+}
+
+.start {
+  z-index: 1000;
+  animation: grow-out 1s ease-in 5s reverse both;
+}
+
+.clear {
+  animation: slide 1s ease-in 5s reverse both;
+}
+
+canvas {
+  border: 1px solid #003049;
+  margin: 20px;
+}
+
+@keyframes grow-out {
+  0% {
+    width: 80px;
+    visibility: visible;
+  }
+  75% {
+    visibility: hidden;
+  }
+  100% {
+    width: 240px;
+    visibility: hidden;
+  }
+}
+
+@keyframes slide {
+  0% {
+    left: 20px;
+  }
+  100% {
+    left: 180px;
+  }
+}
