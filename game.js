@@ -118,11 +118,13 @@
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const canvasWidth = canvas.width;
-const canvasHeight = canvas.height;
+let canvasWidth = window.innerWidth - 20 * 2;
+let canvasHeight = Math.min(400, window.innerHeight - 20 * 2);
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
 const boxWidth = 10;
-const numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
-const numberOfVerticalBox = Math.floor(canvasHeight / boxWidth);
+let numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
+let numberOfVerticalBox = Math.floor(canvasHeight / boxWidth);
 
 let table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
   Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
@@ -134,6 +136,16 @@ const clearButton = document.querySelector(".clear");
 const slider = document.querySelector("#range");
 
 const timeoutValue = document.querySelector(".range-value");
+
+window.addEventListener("resize", (event) => {
+  canvasWidth = event.currentTarget.innerWidth - 20 * 2;
+  canvas.width = canvasWidth;
+  numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
+  table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
+    Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
+  );
+  draw(table);
+});
 
 let running = null;
 let painting = false;
