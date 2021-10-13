@@ -118,11 +118,13 @@
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-let canvasWidth = window.innerWidth - 20 * 2;
-let canvasHeight = Math.min(400, window.innerHeight - 20 * 2);
+const boxWidth = 10;
+let canvasWidth =
+  Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
+let canvasHeight =
+  Math.floor(Math.min(400, window.innerHeight - 20 * 2) / boxWidth) * boxWidth;
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
-const boxWidth = 10;
 let numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
 let numberOfVerticalBox = Math.floor(canvasHeight / boxWidth);
 
@@ -138,13 +140,11 @@ const slider = document.querySelector("#range");
 const timeoutValue = document.querySelector(".range-value");
 
 window.addEventListener("resize", (event) => {
-  canvasWidth = event.currentTarget.innerWidth - 20 * 2;
+  canvasWidth =
+    Math.floor((event.currentTarget.innerWidth - 20 * 2) / boxWidth) * boxWidth;
   canvas.width = canvasWidth;
   numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
-  table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
-    Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
-  );
-  draw(table);
+  clear();
 });
 
 let running = null;
@@ -182,7 +182,7 @@ stopButton.addEventListener("click", (event) => {
   stopButton.disabled = true;
 });
 
-clearButton.addEventListener("click", (event) => {
+function clear() {
   table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
     Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
   );
@@ -191,7 +191,9 @@ clearButton.addEventListener("click", (event) => {
   running = null;
   startButton.disabled = false;
   stopButton.disabled = true;
-});
+}
+
+clearButton.addEventListener("click", clear);
 
 canvas.addEventListener("mousedown", (event) => {
   painting = true;
