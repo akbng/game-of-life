@@ -141,8 +141,12 @@ let timeout = slider.value;
 let cellColor = "#d62828";
 
 slider.addEventListener("input", (event) => {
-  timeout = event.target.value * 10;
+  timeout = event.target.value * 50;
   timeoutValue.innerText = timeout + "s";
+  if (running) {
+    clearInterval(running);
+    running = setInterval(startSimulation, timeout);
+  }
 });
 
 function startSimulation() {
