@@ -149,7 +149,7 @@ window.addEventListener("resize", (event) => {
 
 let running = null;
 let painting = false;
-let timeout = slider.value;
+let timeout = slider.value * 50;
 let cellColor = "#d62828";
 
 slider.addEventListener("input", (event) => {
