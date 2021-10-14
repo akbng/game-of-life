@@ -226,7 +226,7 @@ canvas.addEventListener("mousedown", (event) => {
   painting = true;
   const x = Math.floor(event.offsetX / boxWidth);
   const y = Math.floor(event.offsetY / boxWidth);
-  table[y][x] = 1;
+  table[y][x] = pointer + 1;
   draw(table);
 });
 
@@ -234,7 +234,7 @@ canvas.addEventListener("mousemove", (event) => {
   if (!painting) return;
   const x = Math.floor(event.offsetX / boxWidth);
   const y = Math.floor(event.offsetY / boxWidth);
-  table[y][x] = 1;
+  table[y][x] = pointer + 1;
   draw(table);
 });
 
@@ -244,9 +244,9 @@ canvas.addEventListener("mouseup", (event) => {
 
 function draw(arr) {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  ctx.fillStyle = cellColors[pointer];
   arr.forEach((array, i) => {
     array.forEach((element, j) => {
+      ctx.fillStyle = cellColors[Math.max(element - 1, 0)];
       if (element) ctx.fillRect(j * boxWidth, i * boxWidth, boxWidth, boxWidth);
     });
   });
@@ -278,7 +278,8 @@ function nextGeneration(table) {
       const neighbors = countLiveNeighbors(i, j, table);
       if (neighbors < 2 || neighbors > 3) grid[i][j] = 0;
       else if (neighbors === 2) grid[i][j] = table[i][j];
-      else grid[i][j] = 1;
+      //todo need to plan the color swaps
+      else grid[i][j] = pointer + 1;
     }
   }
   return grid;
