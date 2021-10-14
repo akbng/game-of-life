@@ -128,8 +128,8 @@ canvas.height = canvasHeight;
 let numberOfHorizontalBox = Math.floor(canvasWidth / boxWidth);
 let numberOfVerticalBox = Math.floor(canvasHeight / boxWidth);
 
-let table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
-  Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
+let table = Array.from(new Array(numberOfVerticalBox).keys()).map((_) =>
+  Array.from(new Array(numberOfHorizontalBox).keys()).map((_) => 0)
 );
 
 const startButton = document.querySelector(".start");
@@ -162,8 +162,8 @@ slider.addEventListener("input", (event) => {
 });
 
 function startSimulation() {
-  draw(nextGeneration(table));
   table = nextGeneration(table);
+  draw(table);
 }
 
 startButton.addEventListener("click", (event) => {
@@ -183,8 +183,8 @@ stopButton.addEventListener("click", (event) => {
 });
 
 function clear() {
-  table = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
-    Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
+  table = Array.from(new Array(numberOfVerticalBox).keys()).map((_) =>
+    Array.from(new Array(numberOfHorizontalBox).keys()).map((_) => 0)
   );
   draw(table);
   clearInterval(running);
@@ -245,9 +245,7 @@ function countLiveNeighbors(x, y, table) {
 }
 
 function nextGeneration(table) {
-  const grid = Array.from(new Array(numberOfHorizontalBox).keys()).map((_) =>
-    Array.from(new Array(numberOfVerticalBox).keys()).map((_) => 0)
-  );
+  let grid = table;
   for (let i = 0; i < numberOfVerticalBox; i++) {
     for (let j = 0; j < numberOfHorizontalBox; j++) {
       const neighbors = countLiveNeighbors(i, j, table);

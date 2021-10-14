@@ -40,5 +40,9 @@ canvas {
 }
 
 #range {
-  width: 400px;
+  width: 200px;
+}
+
+.range-slider {
+  margin: 20px;
 }
