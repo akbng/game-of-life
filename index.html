@@ -8,16 +8,26 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <canvas id="canvas"></canvas>
-    <!-- <div class="parent"></div> -->
-    <div class="buttons">
-      <button class="btn start">Start</button>
-      <button class="btn stop" disabled>Stop</button>
-      <button class="btn clear">Clear</button>
-    </div>
-    <div class="range-slider">
-      <input type="range" id="range" min="1" max="20" value="4" />
-      <div class="range-value">200s</div>
+    <div class="container">
+      <canvas id="canvas"></canvas>
+      <!-- <div class="parent"></div> -->
+      <div class="buttons">
+        <button class="btn start">Start</button>
+        <button class="btn stop" disabled>Stop</button>
+        <button class="btn clear">Clear</button>
+      </div>
+      <div class="range-slider">
+        <input type="range" id="range" min="1" max="50" value="5" />
+        <div class="range-value">250ms</div>
+      </div>
+      <div class="input-group">
+        <label for="cell-size">Cell Size</label>
+        <input type="text" id="cell-size" value="10" />
+      </div>
+      <div class="input-group">
+        <label for="cell-color">Cell Color</label>
+        <input type="color" id="cell-color" value="#d62828" />
+      </div>
     </div>
   </body>
   <script src="game.js"></script>
