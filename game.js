@@ -116,6 +116,9 @@
 // // 2. Any live cell with 2 or 3 live neighbors lives
 // // 3. Any dead cell with exactly 3 live neighbors becomes alive
 
+//todo follow these steps for easing the canvas frames
+// link => https://css-tricks.com/easing-animations-in-canvas/
+
 const cellSizeInput = document.querySelector("#cell-size");
 const cellColorInput = document.querySelector("#cell-color");
 
@@ -254,6 +257,7 @@ function draw(arr) {
 
 function countLiveNeighbors(x, y, table) {
   let count = 0;
+  let sum = 0;
   for (
     let i = Math.max(0, x - 1);
     i <= Math.min(numberOfVerticalBoxes - 1, x + 1);
@@ -266,9 +270,10 @@ function countLiveNeighbors(x, y, table) {
     ) {
       if (table[i][j] === 0 || (i === x && j === y)) continue;
       count++;
+      sum += table[i][j];
     }
   }
-  return count;
+  return { count, color: Math.floor(sum / count) };
 }
 
 function nextGeneration(table) {
@@ -276,10 +281,11 @@ function nextGeneration(table) {
   for (let i = 0; i < numberOfVerticalBoxes; i++) {
     for (let j = 0; j < numberOfHorizontalBoxes; j++) {
       const neighbors = countLiveNeighbors(i, j, table);
-      if (neighbors < 2 || neighbors > 3) grid[i][j] = 0;
-      else if (neighbors === 2) grid[i][j] = table[i][j];
+      const numOfNeighbors = neighbors.count;
+      if (numOfNeighbors < 2 || numOfNeighbors > 3) grid[i][j] = 0;
+      else if (numOfNeighbors === 2) grid[i][j] = table[i][j];
       //todo need to plan the color swaps
-      else grid[i][j] = pointer + 1;
+      else grid[i][j] = neighbors.color;
     }
   }
   return grid;
