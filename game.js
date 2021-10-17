@@ -258,19 +258,20 @@ function draw(arr) {
 function countLiveNeighbors(x, y, table) {
   let count = 0;
   let sum = 0;
-  for (
-    let i = Math.max(0, x - 1);
-    i <= Math.min(numberOfVerticalBoxes - 1, x + 1);
-    i++
-  ) {
-    for (
-      let j = Math.max(0, y - 1);
-      j <= Math.min(numberOfHorizontalBoxes - 1, y + 1);
-      j++
-    ) {
-      if (table[i][j] === 0 || (i === x && j === y)) continue;
+  for (let i = x - 1; i <= x + 1; i++) {
+    for (let j = y - 1; j <= y + 1; j++) {
+      let row =
+        i < 0 ? numberOfVerticalBoxes - 1 : i >= numberOfVerticalBoxes ? 0 : i;
+      let col =
+        j < 0
+          ? numberOfHorizontalBoxes - 1
+          : j >= numberOfHorizontalBoxes
+          ? 0
+          : j;
+      // console.log(row, col);
+      if (table[row][col] === 0 || (i === x && j === y)) continue;
       count++;
-      sum += table[i][j];
+      sum += table[row][col];
     }
   }
   return { count, color: Math.floor(sum / count) };
