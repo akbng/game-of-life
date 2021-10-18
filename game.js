@@ -121,9 +121,11 @@
 
 const cellSizeInput = document.querySelector("#cell-size");
 const cellColorInput = document.querySelector("#cell-color");
+const bgColorInput = document.querySelector("#bg-color");
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+let bgColor = bgColorInput.value;
 let boxWidth = parseInt(cellSizeInput.value);
 let canvasWidth =
   Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
@@ -133,6 +135,10 @@ canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 let numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
 let numberOfVerticalBoxes = Math.floor(canvasHeight / boxWidth);
+
+bgColorInput.addEventListener("change", (event) => {
+  bgColor = event.target.value;
+});
 
 cellSizeInput.addEventListener("change", (event) => {
   clear();
@@ -225,28 +231,43 @@ function clear() {
 
 clearButton.addEventListener("click", clear);
 
-canvas.addEventListener("mousedown", (event) => {
+const startPopulatingGrid = (event) => {
   painting = true;
   const x = Math.floor(event.offsetX / boxWidth);
   const y = Math.floor(event.offsetY / boxWidth);
   table[y][x] = pointer + 1;
   draw(table);
-});
+};
 
-canvas.addEventListener("mousemove", (event) => {
+const populateGrid = (event) => {
   if (!painting) return;
   const x = Math.floor(event.offsetX / boxWidth);
   const y = Math.floor(event.offsetY / boxWidth);
   table[y][x] = pointer + 1;
   draw(table);
-});
+};
 
-canvas.addEventListener("mouseup", (event) => {
+const stopDrawing = (event) => {
   painting = false;
-});
+};
+
+if (window.PointerEvent) {
+  canvas.addEventListener("pointerdown", startPopulatingGrid);
+  canvas.addEventListener("pointermove", populateGrid);
+  canvas.addEventListener("pointerup", stopDrawing);
+} else {
+  canvas.addEventListener("touchstart", startPopulatingGrid);
+  canvas.addEventListener("touchmove", populateGrid);
+  canvas.addEventListener("touchend", stopDrawing);
+  canvas.addEventListener("touchcancel", stopDrawing);
+  canvas.addEventListener("mousedown", startPopulatingGrid);
+  canvas.addEventListener("mousemove", populateGrid);
+  canvas.addEventListener("mouseup", stopDrawing);
+}
 
 function draw(arr) {
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   arr.forEach((array, i) => {
     array.forEach((element, j) => {
       ctx.fillStyle = cellColors[Math.max(element - 1, 0)];
@@ -274,7 +295,7 @@ function countLiveNeighbors(x, y, table) {
       sum += table[row][col];
     }
   }
-  return { count, color: Math.floor(sum / count) };
+  return { count, color: Math.round(sum / count) };
 }
 
 function nextGeneration(table) {
