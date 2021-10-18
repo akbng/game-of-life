@@ -138,6 +138,7 @@ let numberOfVerticalBoxes = Math.floor(canvasHeight / boxWidth);
 
 bgColorInput.addEventListener("change", (event) => {
   bgColor = event.target.value;
+  draw(table);
 });
 
 cellSizeInput.addEventListener("change", (event) => {
@@ -233,16 +234,28 @@ clearButton.addEventListener("click", clear);
 
 const startPopulatingGrid = (event) => {
   painting = true;
-  const x = Math.floor(event.offsetX / boxWidth);
-  const y = Math.floor(event.offsetY / boxWidth);
+  let x, y;
+  if (event.type === "touchstart") {
+    x = Math.floor((event.touches[0].clientX - 20) / boxWidth);
+    y = Math.floor((event.touches[0].clientY - 20) / boxWidth);
+  } else {
+    x = Math.floor(event.offsetX / boxWidth);
+    y = Math.floor(event.offsetY / boxWidth);
+  }
   table[y][x] = pointer + 1;
   draw(table);
 };
 
 const populateGrid = (event) => {
   if (!painting) return;
-  const x = Math.floor(event.offsetX / boxWidth);
-  const y = Math.floor(event.offsetY / boxWidth);
+  let x, y;
+  if (event.type === "touchmove") {
+    x = Math.floor((event.touches[0].clientX - 20) / boxWidth);
+    y = Math.floor((event.touches[0].clientY - 20) / boxWidth);
+  } else {
+    x = Math.floor(event.offsetX / boxWidth);
+    y = Math.floor(event.offsetY / boxWidth);
+  }
   table[y][x] = pointer + 1;
   draw(table);
 };
@@ -251,19 +264,13 @@ const stopDrawing = (event) => {
   painting = false;
 };
 
-if (window.PointerEvent) {
-  canvas.addEventListener("pointerdown", startPopulatingGrid);
-  canvas.addEventListener("pointermove", populateGrid);
-  canvas.addEventListener("pointerup", stopDrawing);
-} else {
-  canvas.addEventListener("touchstart", startPopulatingGrid);
-  canvas.addEventListener("touchmove", populateGrid);
-  canvas.addEventListener("touchend", stopDrawing);
-  canvas.addEventListener("touchcancel", stopDrawing);
-  canvas.addEventListener("mousedown", startPopulatingGrid);
-  canvas.addEventListener("mousemove", populateGrid);
-  canvas.addEventListener("mouseup", stopDrawing);
-}
+canvas.addEventListener("touchstart", startPopulatingGrid);
+canvas.addEventListener("touchmove", populateGrid);
+canvas.addEventListener("touchend", stopDrawing);
+canvas.addEventListener("touchcancel", stopDrawing);
+canvas.addEventListener("mousedown", startPopulatingGrid);
+canvas.addEventListener("mousemove", populateGrid);
+canvas.addEventListener("mouseup", stopDrawing);
 
 function draw(arr) {
   ctx.fillStyle = bgColor;
