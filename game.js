@@ -127,8 +127,13 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 let bgColor = bgColorInput.value;
 let boxWidth = parseInt(cellSizeInput.value);
-let canvasWidth =
-  Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
+let canvasWidth;
+if (window.innerWidth > 768) {
+  canvasWidth =
+    Math.floor((window.innerWidth - 20 * 2 - 300) / boxWidth) * boxWidth;
+} else {
+  canvasWidth = Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
+}
 let canvasHeight =
   Math.floor(Math.min(400, window.innerHeight - 20 * 2) / boxWidth) * boxWidth;
 canvas.width = canvasWidth;
@@ -144,7 +149,13 @@ bgColorInput.addEventListener("change", (event) => {
 cellSizeInput.addEventListener("change", (event) => {
   clear();
   boxWidth = parseInt(event.target.value);
-  canvasWidth = Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
+  if (window.innerWidth > 768) {
+    canvasWidth =
+      Math.floor((window.innerWidth - 20 * 2 - 300) / boxWidth) * boxWidth;
+  } else {
+    canvasWidth =
+      Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
+  }
   canvasHeight =
     Math.floor(Math.min(400, window.innerHeight - 20 * 2) / boxWidth) *
     boxWidth;
@@ -167,13 +178,19 @@ let table = generateEmptyGrid();
 const startButton = document.querySelector(".start");
 const stopButton = document.querySelector(".stop");
 const clearButton = document.querySelector(".clear");
+const nextButton = document.querySelector(".next");
 const slider = document.querySelector("#range");
 
 const timeoutValue = document.querySelector(".range-value");
 
 window.addEventListener("resize", (event) => {
-  canvasWidth =
-    Math.floor((event.currentTarget.innerWidth - 20 * 2) / boxWidth) * boxWidth;
+  const windowWidth = event.currentTarget.innerWidth;
+  if (windowWidth > 768) {
+    canvasWidth =
+      Math.floor((windowWidth - 20 * 2 - 300) / boxWidth) * boxWidth;
+  } else {
+    canvasWidth = Math.floor((windowWidth - 20 * 2) / boxWidth) * boxWidth;
+  }
   canvas.width = canvasWidth;
   numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
   clear();
@@ -231,6 +248,10 @@ function clear() {
 }
 
 clearButton.addEventListener("click", clear);
+nextButton.addEventListener("click", (event) => {
+  table = nextGeneration(table);
+  draw(table);
+});
 
 const startPopulatingGrid = (event) => {
   painting = true;
