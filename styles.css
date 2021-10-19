@@ -7,24 +7,36 @@
   font-family: "Montserrat", sans-serif;
 }
 
+html,
+body {
+  overscroll-behavior-y: contain;
+}
+
 .container {
   overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+.top {
+  position: relative;
+  width: 100vw;
+  height: 440px;
 }
 
 .buttons {
   width: calc(100vw - 40px);
-  max-width: 300px;
+  height: 40px;
   margin: 20px;
   display: flex;
-  justify-content: space-around;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .btn {
+  margin: 0 0.5em;
   padding: 0.74em 1.2em;
-  width: 80px;
   border: 1px solid #003049;
   border-radius: 4px;
   color: #003049;
@@ -32,6 +44,18 @@
   box-shadow: none;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.interactive {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .btn:disabled {
@@ -44,9 +68,49 @@ canvas {
 }
 
 #range {
-  width: 250px;
+  width: 80%;
 }
 
-.range-slider {
-  margin: 20px;
+#cell-size {
+  max-width: 50px;
+  padding: 0.5em 0.9em;
+}
+
+#pattern-library {
+  max-width: 120px;
+  padding: 0.5em 0.9em;
+}
+
+.input-group {
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.button-groups {
+  display: flex;
+  justify-content: center;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    overflow-y: scroll;
+  }
+  .interactive {
+    top: 115%;
+    left: 0;
+    width: 100%;
+    height: 300px;
+  }
+  .input-group {
+    width: 300px;
+  }
+  .btn {
+    margin: 0.5em 0.5em;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .interactive {
+    top: 128%;
+  }
 }
