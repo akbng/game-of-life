@@ -21,14 +21,14 @@ body {
 .top {
   position: relative;
   width: 100vw;
-  height: 70vh;
+  height: 75vh;
 }
 
 .buttons {
   position: absolute;
   bottom: 0;
   width: calc(100vw - 40px);
-  /* height: 40px; */
+  max-height: 25vh;
   margin: 20px;
   display: flex;
   justify-content: center;
@@ -54,6 +54,7 @@ body {
   right: 0;
   bottom: 0;
   width: 300px;
+  background-color: white;
   transition: right 325ms ease-out;
 }
 
@@ -99,11 +100,18 @@ canvas {
   justify-content: center;
 }
 
+.controls-toggle {
+  display: none;
+}
+
 @media screen and (max-width: 768px) {
   .controls {
     right: -100%;
   }
   .controls.active {
     right: 0;
+  }
+  .controls-toggle {
+    display: block;
   }
 }

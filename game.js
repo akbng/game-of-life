@@ -135,7 +135,7 @@ if (window.innerWidth > 768) {
   canvasWidth = Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
 }
 let canvasHeight =
-  Math.floor(Math.min(400, window.innerHeight - 20 * 2) / boxWidth) * boxWidth;
+  Math.floor((window.innerHeight * 0.75 - 20 * 2) / boxWidth) * boxWidth;
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 let numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
@@ -157,8 +157,7 @@ cellSizeInput.addEventListener("change", (event) => {
       Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
   }
   canvasHeight =
-    Math.floor(Math.min(400, window.innerHeight - 20 * 2) / boxWidth) *
-    boxWidth;
+    Math.floor((window.innerHeight * 0.75 - 20 * 2) / boxWidth) * boxWidth;
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
   numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
@@ -191,8 +190,13 @@ window.addEventListener("resize", (event) => {
   } else {
     canvasWidth = Math.floor((windowWidth - 20 * 2) / boxWidth) * boxWidth;
   }
+  canvasHeight =
+    Math.floor((event.currentTarget.innerHeight * 0.75 - 20 * 2) / boxWidth) *
+    boxWidth;
   canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
   numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
+  numberOfVerticalBoxes = Math.floor(canvasHeight / boxWidth);
   clear();
 });
 
@@ -254,6 +258,7 @@ nextButton.addEventListener("click", (event) => {
 });
 
 const startPopulatingGrid = (event) => {
+  event.preventDefault();
   painting = true;
   let x, y;
   if (event.type === "touchstart") {
@@ -268,6 +273,7 @@ const startPopulatingGrid = (event) => {
 };
 
 const populateGrid = (event) => {
+  event.preventDefault();
   if (!painting) return;
   let x, y;
   if (event.type === "touchmove") {
@@ -282,6 +288,7 @@ const populateGrid = (event) => {
 };
 
 const stopDrawing = (event) => {
+  event.preventDefault();
   painting = false;
 };
 
