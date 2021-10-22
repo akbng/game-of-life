@@ -11,36 +11,39 @@
     <div class="container">
       <header class="top">
         <canvas id="canvas"></canvas>
-        <div class="interactive">
-          <div class="input-group button-groups">
-            <button class="btn explain" disabled>Explanation</button>
-            <button class="btn Guide" disabled>Guide</button>
-          </div>
-          <div class="range-slider input-group">
-            <input type="range" id="range" min="1" max="50" value="5" />
-            <label for="range"
-              >Animation Interval: <span class="range-value">250ms</span></label
-            >
-          </div>
-          <div class="input-group">
-            <label for="cell-size">Cell Size: </label>
-            <input type="text" id="cell-size" value="10" />
-          </div>
-          <div class="input-group">
-            <label for="cell-color">Cell Color: </label>
-            <input type="color" id="cell-color" value="#d62828" />
-          </div>
-          <div class="input-group">
-            <label for="bg-color">Background Color: </label>
-            <input type="color" id="bg-color" value="#ffffff" />
-          </div>
-          <div class="input-group">
-            <label for="pattern-library">Predefined patterns</label>
-            <select id="pattern-library">
-              <option value="">choose</option>
-              <option value="glider">glider</option>
-              <option value="spaceship">spaceship</option>
-            </select>
+        <div class="controls">
+          <div class="interactive">
+            <div class="input-group button-groups">
+              <button class="btn explain" disabled>Explanation</button>
+              <button class="btn Guide" disabled>Guide</button>
+            </div>
+            <div class="range-slider input-group">
+              <input type="range" id="range" min="1" max="50" value="5" />
+              <label for="range"
+                >Animation Interval:
+                <span class="range-value">250ms</span></label
+              >
+            </div>
+            <div class="input-group">
+              <label for="cell-size">Cell Size: </label>
+              <input type="text" id="cell-size" value="10" />
+            </div>
+            <div class="input-group">
+              <label for="cell-color">Cell Color: </label>
+              <input type="color" id="cell-color" value="#d62828" />
+            </div>
+            <div class="input-group">
+              <label for="bg-color">Background Color: </label>
+              <input type="color" id="bg-color" value="#ffffff" />
+            </div>
+            <div class="input-group">
+              <label for="pattern-library">Predefined patterns</label>
+              <select id="pattern-library">
+                <option value="">choose</option>
+                <option value="glider">glider</option>
+                <option value="spaceship">spaceship</option>
+              </select>
+            </div>
           </div>
         </div>
       </header>
@@ -52,9 +55,14 @@
         <button class="btn clear">Clear</button>
         <button class="btn next">Next</button>
         <button class="btn random" disabled>Random</button>
+        <button
+          class="btn controls-toggle"
+          onclick="document.querySelector('.controls').classList.toggle('active')"
+        >
+          Controls
+        </button>
       </div>
     </div>
-    <div class="overlay"></div>
   </body>
   <script src="game.js"></script>
 </html>
