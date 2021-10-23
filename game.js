@@ -22,35 +22,34 @@ class CanvasDisplay {
     const cellSize = this.boxWidth;
     state.grid.forEach((rows, i) => {
       rows.forEach((cell, j) => {
-        if (!cell)
-          this.ctx.strokeRect(j * cellSize, i * cellSize, cellSize, cellSize);
-        else this.ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+        if (cell)
+          this.ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
       });
     });
   }
 }
 
 class State {
-  constructor(display, grid, cellSize) {
-    if (grid) {
-      this.rows = grid.length;
-      this.columns = grid[0].length;
-      this.cellWidth = cellSize;
-      this.grid = grid;
-      return;
-    }
-    this.rows = Math.floor(display.height / display.boxWidth);
-    this.columns = Math.floor(display.width / display.boxWidth);
-    this.cellWidth = display.boxWidth;
-    this.grid = Array.from(new Array(this.columns).keys()).map((_) =>
-      Array.from(new Array(this.rows).keys()).map((_) => 0)
+  constructor(grid, cellSize) {
+    this.rows = grid.length;
+    this.columns = grid[0].length;
+    this.cellWidth = cellSize;
+    this.grid = grid;
+  }
+  static fromDisplay(display) {
+    const rows = Math.floor(display.height / display.boxWidth);
+    const columns = Math.floor(display.width / display.boxWidth);
+    const cellWidth = display.boxWidth;
+    const grid = Array.from(new Array(columns).keys()).map((_) =>
+      Array.from(new Array(rows).keys()).map((_) => 0)
     );
+    return new State(grid, cellWidth);
   }
   updateState(event) {
     const x = Math.floor(event.offsetX / this.cellWidth);
     const y = Math.floor(event.offsetY / this.cellWidth);
     this.grid[y][x] = 1;
-    return new State(null, this.grid, this.cellWidth);
+    return new State(this.grid, this.cellWidth);
   }
   proceedToNextGeneration() {
     console.log(this);
@@ -85,30 +84,28 @@ class State {
     }
 
     this.grid = newGrid;
-    return new State(null, newGrid, this.cellWidth);
+    return new State(newGrid, this.cellWidth);
   }
 }
 
-(function init() {
-  const parent = document.querySelector(".parent");
-  const display = new CanvasDisplay(parent);
-  let state = new State(display);
-  display.syncState(state);
-  display.canvas.addEventListener("mousedown", handleMouseDown);
-  function handleMouseDown(event) {
-    state = state.updateState(event);
-    display.syncState(state);
-  }
+const parent = document.querySelector(".parent");
+const startButton = document.querySelector(".start");
+const display = new CanvasDisplay(parent);
+let state = State.fromDisplay(display);
+display.syncState(state);
+display.canvas.addEventListener("mousedown", handleMouseDown);
+function handleMouseDown(event) {
   console.log(state);
+  state = state.updateState(event);
+  display.syncState(state);
+}
 
-  const startButton = document.querySelector(".start");
-  startButton.addEventListener("click", () => {
-    console.log(state);
-    state = state.proceedToNextGeneration();
-    display.syncState(state);
-  });
-  function startSimulation(event) {}
-})();
+startButton.addEventListener("click", () => {
+  console.log(state);
+  state = state.proceedToNextGeneration();
+  display.syncState(state);
+});
+function startSimulation(event) {}
 
 // // window.addEventListener("DOMContentLoaded", init);
 // // ============Rules================
