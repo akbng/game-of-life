@@ -48,45 +48,66 @@ class State {
   updateState(event) {
     const x = Math.floor(event.offsetX / this.cellWidth);
     const y = Math.floor(event.offsetY / this.cellWidth);
-    this.grid[y][x] = 1;
-    return new State(this.grid, this.cellWidth);
+    const grid = this.grid.map((rows) => rows.map((cols) => cols));
+    grid[y][x] = 1;
+    return new State(grid, this.cellWidth);
   }
   proceedToNextGeneration() {
-    console.log(this);
-
-    function countLiveNeighbors(x, y, grid) {
-      let count = 0;
-      for (
-        let i = Math.max(0, x - 1);
-        i <= Math.min(grid.rows - 1, x + 1);
-        i++
-      ) {
-        for (
-          let j = Math.max(0, y - 1);
-          j <= Math.min(grid.columns - 1, y + 1);
-          j++
-        ) {
-          if (grid[i][j] === 0 || (i === x && j === y)) continue;
-          count++;
-        }
-      }
-      return count;
-    }
-
-    const newGrid = Array.from(this.grid);
+    const grid = Array.from(new Array(this.columns).keys()).map((_) =>
+      Array.from(new Array(this.rows).keys()).map((_) => 0)
+    );
+    console.log(this.grid);
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
         const neighbors = countLiveNeighbors(i, j, this.grid);
-        if (neighbors < 2 || neighbors > 3) newGrid[i][j] = 0;
-        else if (neighbors === 2) newGrid[i][j] = this.grid[i][j];
-        else newGrid[i][j] = 1;
+        if (neighbors < 2 || neighbors > 3) grid[i][j] = 0;
+        else if (neighbors === 2) grid[i][j] = this.grid[i][j];
+        else grid[i][j] = 1;
       }
     }
-
-    this.grid = newGrid;
-    return new State(newGrid, this.cellWidth);
+    console.log(grid);
+    return new State(grid, this.cellWidth);
   }
 }
+
+function countLiveNeighbors(x, y, grid) {
+  let count = 0;
+  for (let i = Math.max(0, x - 1); i <= Math.min(grid.rows - 1, x + 1); i++) {
+    for (
+      let j = Math.max(0, y - 1);
+      j <= Math.min(grid.columns - 1, y + 1);
+      j++
+    ) {
+      if (grid[i][j] === 0 || (i === x && j === y)) continue;
+      count++;
+    }
+  }
+  return count;
+}
+
+// function countLiveNeighbors(x, y, table) {
+//   let count = 0;
+//   let sum = 0;
+//   for (let i = x - 1; i <= x + 1; i++) {
+//     for (let j = y - 1; j <= y + 1; j++) {
+//       let row =
+//         i < 0 ? numberOfVerticalBoxes - 1 : i >= numberOfVerticalBoxes ? 0 : i;
+//       let col =
+//         j < 0
+//           ? numberOfHorizontalBoxes - 1
+//           : j >= numberOfHorizontalBoxes
+//           ? 0
+//           : j;
+//       // console.log(row, col);
+//       if (table[row][col] === 0 || (i === x && j === y)) continue;
+//       count++;
+//       sum += table[row][col];
+//     }
+//   }
+//   console.log(count);
+//   return count;
+//   // return { count, color: Math.round(sum / count) };
+// }
 
 const parent = document.querySelector(".parent");
 const startButton = document.querySelector(".start");
@@ -95,16 +116,19 @@ let state = State.fromDisplay(display);
 display.syncState(state);
 display.canvas.addEventListener("mousedown", handleMouseDown);
 function handleMouseDown(event) {
-  console.log(state);
   state = state.updateState(event);
   display.syncState(state);
 }
-
+// startButton.addEventListener("click", handleClick);
 startButton.addEventListener("click", () => {
-  console.log(state);
   state = state.proceedToNextGeneration();
   display.syncState(state);
 });
+// function handleClick(event) {
+//   console.log(state);
+//   state = state.proceedToNextGeneration();
+//   display.syncState(state);
+// }
 function startSimulation(event) {}
 
 // // window.addEventListener("DOMContentLoaded", init);
