@@ -46,11 +46,33 @@ class State {
     return new State(grid, cellWidth);
   }
   updateState(event) {
-    const x = Math.floor(event.offsetX / this.cellWidth);
-    const y = Math.floor(event.offsetY / this.cellWidth);
+    event.preventDefault();
+    let x, y;
+    //todo use regex like this - /touch/.exec(event.type)
+    if (event.type === "touchstart" || event.type === "touchmove") {
+      x = Math.floor((event.touches[0].clientX - 20) / this.cellWidth);
+      y = Math.floor((event.touches[0].clientY - 20) / this.cellWidth);
+    } else {
+      x = Math.floor(event.offsetX / this.cellWidth);
+      y = Math.floor(event.offsetY / this.cellWidth);
+    }
     const grid = this.grid.map((rows) => rows.map((cols) => cols));
     grid[y][x] = 1;
     return new State(grid, this.cellWidth);
+  }
+  _countLiveNeighbors(x, y) {
+    let count = 0;
+    for (let i = x - 1; i <= x + 1; i++) {
+      for (let j = y - 1; j <= y + 1; j++) {
+        let row = i < 0 ? this.rows - 1 : i >= this.rows ? 0 : i;
+        let col = j < 0 ? this.columns - 1 : j >= this.columns ? 0 : j;
+        if (this.grid[row][col] === 0 || (i === x && j === y)) continue;
+        count++;
+        // sum += this.grid[row][col];
+      }
+    }
+    // return { count, color: Math.round(sum / count) };
+    return count;
   }
   proceedToNextGeneration() {
     const grid = Array.from(new Array(this.columns).keys()).map((_) =>
@@ -58,7 +80,7 @@ class State {
     );
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        const neighbors = countLiveNeighbors(i, j, this);
+        const neighbors = this._countLiveNeighbors(i, j);
         if (neighbors < 2 || neighbors > 3) grid[i][j] = 0;
         else if (neighbors === 2) grid[i][j] = this.grid[i][j];
         else grid[i][j] = 1;
@@ -68,38 +90,82 @@ class State {
   }
 }
 
-function countLiveNeighbors(x, y, state) {
-  let count = 0;
-  let sum = 0;
-  for (let i = x - 1; i <= x + 1; i++) {
-    for (let j = y - 1; j <= y + 1; j++) {
-      let row = i < 0 ? state.rows - 1 : i >= state.rows ? 0 : i;
-      let col = j < 0 ? state.columns - 1 : j >= state.columns ? 0 : j;
-      if (state.grid[row][col] === 0 || (i === x && j === y)) continue;
-      count++;
-      sum += state.grid[row][col];
-    }
-  }
-  return count;
-  // return { count, color: Math.round(sum / count) };
-}
-
-function init() {
+const init = () => {
   const parent = document.querySelector(".parent");
   const startButton = document.querySelector(".start");
+  const stopButton = document.querySelector(".stop");
+  const clearButton = document.querySelector(".clear");
+  const nextButton = document.querySelector(".next");
+  const slider = document.querySelector("#range");
+
+  let painting = false;
+  let running = null;
+  let timeout = slider.value * 50;
+
+  //! Not a closure but a pure function
+  const updateAndSyncState = (event, currentState, canvasDisplay) => {
+    const state = currentState.updateState(event);
+    canvasDisplay.syncState(state);
+    return state;
+  };
+
+  const simulate = () => {
+    state = state.proceedToNextGeneration();
+    display.syncState(state);
+  };
+
   const display = new CanvasDisplay(parent);
   let state = State.fromDisplay(display);
   display.syncState(state);
-  display.canvas.addEventListener("mousedown", handleMouseDown);
-  function handleMouseDown(event) {
-    state = state.updateState(event);
-    display.syncState(state);
-  }
+
+  //! Beware Closure but Not a pure function
+  const startPopulatingGrid = (event) => {
+    painting = true;
+    state = updateAndSyncState(event, state, display);
+  };
+
+  const populateGrid = (event) => {
+    if (!painting) return;
+    state = updateAndSyncState(event, state, display);
+  };
+
+  const stopDrawing = (event) => {
+    event.preventDefault();
+    painting = false;
+  };
+
+  display.canvas.addEventListener("mousedown", startPopulatingGrid);
+  display.canvas.addEventListener("mousemove", populateGrid);
+  display.canvas.addEventListener("mouseup", stopDrawing);
+
+  display.canvas.addEventListener("touchstart", startPopulatingGrid);
+  display.canvas.addEventListener("touchmove", populateGrid);
+  display.canvas.addEventListener("touchend", stopDrawing);
+  display.canvas.addEventListener("touchcancel", stopDrawing);
+
   startButton.addEventListener("click", () => {
-    state = state.proceedToNextGeneration();
-    display.syncState(state);
+    if (running) return;
+    running = setInterval(simulate, timeout);
+    startButton.disabled = true;
+    stopButton.disabled = false;
   });
-}
+  stopButton.addEventListener("click", () => {
+    if (!running) return;
+    clearInterval(running);
+    running = null;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+  });
+  clearButton.addEventListener("click", () => {
+    state = State.fromDisplay(display);
+    display.syncState(state);
+    clearInterval(running);
+    running = null;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+  });
+  nextButton.addEventListener("click", simulate);
+};
 
 window.addEventListener("DOMContentLoaded", init);
 
@@ -251,41 +317,7 @@ function startSimulation(event) {}
 //   draw(table);
 // });
 
-// const startPopulatingGrid = (event) => {
-//   event.preventDefault();
-//   painting = true;
-//   let x, y;
-//   if (event.type === "touchstart") {
-//     x = Math.floor((event.touches[0].clientX - 20) / boxWidth);
-//     y = Math.floor((event.touches[0].clientY - 20) / boxWidth);
-//   } else {
-//     x = Math.floor(event.offsetX / boxWidth);
-//     y = Math.floor(event.offsetY / boxWidth);
-//   }
-//   table[y][x] = pointer + 1;
-//   draw(table);
-// };
-
-// const populateGrid = (event) => {
-//   event.preventDefault();
-//   if (!painting) return;
-//   let x, y;
-//   if (event.type === "touchmove") {
-//     x = Math.floor((event.touches[0].clientX - 20) / boxWidth);
-//     y = Math.floor((event.touches[0].clientY - 20) / boxWidth);
-//   } else {
-//     x = Math.floor(event.offsetX / boxWidth);
-//     y = Math.floor(event.offsetY / boxWidth);
-//   }
-//   table[y][x] = pointer + 1;
-//   draw(table);
-// };
-
-// const stopDrawing = (event) => {
-//   event.preventDefault();
-//   painting = false;
-// };
-
+//
 // canvas.addEventListener("touchstart", startPopulatingGrid);
 // canvas.addEventListener("touchmove", populateGrid);
 // canvas.addEventListener("touchend", stopDrawing);
