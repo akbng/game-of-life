@@ -1,19 +1,40 @@
 class CanvasDisplay {
-  constructor(parent) {
-    this.canvas = document.createElement("canvas");
-    this.width = 400;
-    this.height = 400;
-    this.canvas.width = this.width; //window.innerWidth;
-    this.canvas.height = this.height; //window.innerHeight;
-    this.boxWidth = 10;
-    parent.appendChild(this.canvas);
+  constructor(canvas, width, height, boxWidth) {
+    this.canvas = canvas;
+    this.width = width;
+    this.height = height;
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
+    this.boxWidth = boxWidth;
     this.ctx = this.canvas.getContext("2d");
+  }
+  static start(parent, boxWidth) {
+    const canvas = document.createElement("canvas");
+    const width =
+      Math.floor(
+        (window.innerWidth - 20 * 2 - (window.innerWidth > 768 ? 300 : 0)) /
+          boxWidth
+      ) * boxWidth;
+    const height =
+      Math.floor((window.innerHeight * 0.75 - 20 * 2) / boxWidth) * boxWidth;
+    canvas.width = width;
+    canvas.height = height;
+    parent.appendChild(canvas);
+    return new CanvasDisplay(canvas, width, height, boxWidth);
   }
   clear() {
     this.canvas.remove();
   }
   resizeDisplay() {
-    //todo implement the functionality
+    const windowWidth = window.innerWidth;
+    const width =
+      Math.floor(
+        (windowWidth - 20 * 2 - (windowWidth > 768 ? 300 : 0)) / this.boxWidth
+      ) * this.boxWidth;
+    const height =
+      Math.floor((window.innerHeight * 0.75 - 20 * 2) / this.boxWidth) *
+      this.boxWidth;
+    return new CanvasDisplay(this.canvas, width, height, this.boxWidth);
   }
   syncState(state) {
     this.ctx.clearRect(0, 0, this.width, this.height);
@@ -40,8 +61,8 @@ class State {
     const rows = Math.floor(display.height / display.boxWidth);
     const columns = Math.floor(display.width / display.boxWidth);
     const cellWidth = display.boxWidth;
-    const grid = Array.from(new Array(columns).keys()).map((_) =>
-      Array.from(new Array(rows).keys()).map((_) => 0)
+    const grid = Array.from(new Array(rows).keys()).map((_) =>
+      Array.from(new Array(columns).keys()).map((_) => 0)
     );
     return new State(grid, cellWidth);
   }
@@ -75,8 +96,8 @@ class State {
     return count;
   }
   proceedToNextGeneration() {
-    const grid = Array.from(new Array(this.columns).keys()).map((_) =>
-      Array.from(new Array(this.rows).keys()).map((_) => 0)
+    const grid = Array.from(new Array(this.rows).keys()).map((_) =>
+      Array.from(new Array(this.columns).keys()).map((_) => 0)
     );
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
@@ -91,12 +112,13 @@ class State {
 }
 
 const init = () => {
-  const parent = document.querySelector(".parent");
+  const parent = document.querySelector(".canvas");
   const startButton = document.querySelector(".start");
   const stopButton = document.querySelector(".stop");
   const clearButton = document.querySelector(".clear");
   const nextButton = document.querySelector(".next");
   const slider = document.querySelector("#range");
+  const cellSizeInput = document.querySelector("#cell-size");
 
   let painting = false;
   let running = null;
@@ -114,7 +136,7 @@ const init = () => {
     display.syncState(state);
   };
 
-  const display = new CanvasDisplay(parent);
+  const display = CanvasDisplay.start(parent, cellSizeInput.value);
   let state = State.fromDisplay(display);
   display.syncState(state);
 
@@ -165,11 +187,11 @@ const init = () => {
     stopButton.disabled = true;
   });
   nextButton.addEventListener("click", simulate);
+
+  window.addEventListener("resize", () => display.resizeDisplay());
 };
 
 window.addEventListener("DOMContentLoaded", init);
-
-function startSimulation(event) {}
 
 //! ============Rules================
 //* 1. Any live cell with fewer than 2 or more than 3 live neighbors dies
@@ -243,21 +265,7 @@ function startSimulation(event) {}
 // const timeoutValue = document.querySelector(".range-value");
 
 // window.addEventListener("resize", (event) => {
-//   const windowWidth = event.currentTarget.innerWidth;
-//   if (windowWidth > 768) {
-//     canvasWidth =
-//       Math.floor((windowWidth - 20 * 2 - 300) / boxWidth) * boxWidth;
-//   } else {
-//     canvasWidth = Math.floor((windowWidth - 20 * 2) / boxWidth) * boxWidth;
-//   }
-//   canvasHeight =
-//     Math.floor((event.currentTarget.innerHeight * 0.75 - 20 * 2) / boxWidth) *
-//     boxWidth;
-//   canvas.width = canvasWidth;
-//   canvas.height = canvasHeight;
-//   numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
-//   numberOfVerticalBoxes = Math.floor(canvasHeight / boxWidth);
-//   clear();
+//
 // });
 
 // let running = null;
