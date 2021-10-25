@@ -1,5 +1,10 @@
+//! ============Game Rules============
+//? 1. Any live cell with fewer than 2 or more than 3 live neighbors dies
+//? 2. Any live cell with 2 or 3 live neighbors lives
+//? 3. Any dead cell with exactly 3 live neighbors becomes alive
+
 class CanvasDisplay {
-  constructor(canvas, width, height, boxWidth) {
+  constructor(canvas, width, height, boxWidth, colors) {
     this.canvas = canvas;
     this.width = width;
     this.height = height;
@@ -7,8 +12,19 @@ class CanvasDisplay {
     this.canvas.height = this.height;
     this.boxWidth = boxWidth;
     this.ctx = this.canvas.getContext("2d");
+    this.colors = colors;
+    this.backgroundColor = "#ffffff";
   }
-  static start(parent, boxWidth) {
+  set bgColor(color) {
+    this.backgroundColor = color;
+  }
+  set cellColor(color) {
+    this.colors = [...this.colors, color];
+  }
+  set cellSize(size) {
+    this.boxWidth = size;
+  }
+  static start(parent, boxWidth, cellColor) {
     const canvas = document.createElement("canvas");
     const width =
       Math.floor(
@@ -20,7 +36,7 @@ class CanvasDisplay {
     canvas.width = width;
     canvas.height = height;
     parent.appendChild(canvas);
-    return new CanvasDisplay(canvas, width, height, boxWidth);
+    return new CanvasDisplay(canvas, width, height, boxWidth, [cellColor]);
   }
   clear() {
     this.canvas.remove();
@@ -34,15 +50,21 @@ class CanvasDisplay {
     const height =
       Math.floor((window.innerHeight * 0.75 - 20 * 2) / this.boxWidth) *
       this.boxWidth;
-    return new CanvasDisplay(this.canvas, width, height, this.boxWidth);
+    return new CanvasDisplay(
+      this.canvas,
+      width,
+      height,
+      this.boxWidth,
+      this.colors
+    );
   }
   syncState(state) {
-    this.ctx.clearRect(0, 0, this.width, this.height);
-    this.ctx.strokeStyle = "#003049";
-    this.ctx.fillStyle = "#003049";
+    this.ctx.fillStyle = this.backgroundColor;
+    this.ctx.fillRect(0, 0, this.width, this.height);
     const cellSize = this.boxWidth;
     state.grid.forEach((rows, i) => {
       rows.forEach((cell, j) => {
+        this.ctx.fillStyle = this.colors[Math.max(cell - 1, 0)];
         if (cell)
           this.ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
       });
@@ -51,20 +73,24 @@ class CanvasDisplay {
 }
 
 class State {
-  constructor(grid, cellSize) {
+  constructor(grid, cellSize, pointer) {
     this.rows = grid.length;
     this.columns = grid[0].length;
     this.cellWidth = cellSize;
     this.grid = grid;
+    this.pointer = pointer;
   }
-  static fromDisplay(display) {
+  set colorPointer(value) {
+    this.pointer = value;
+  }
+  static fromDisplay(display, pointer) {
     const rows = Math.floor(display.height / display.boxWidth);
     const columns = Math.floor(display.width / display.boxWidth);
     const cellWidth = display.boxWidth;
     const grid = Array.from(new Array(rows).keys()).map((_) =>
       Array.from(new Array(columns).keys()).map((_) => 0)
     );
-    return new State(grid, cellWidth);
+    return new State(grid, cellWidth, pointer);
   }
   updateState(event) {
     event.preventDefault();
@@ -78,22 +104,22 @@ class State {
       y = Math.floor(event.offsetY / this.cellWidth);
     }
     const grid = this.grid.map((rows) => rows.map((cols) => cols));
-    grid[y][x] = 1;
-    return new State(grid, this.cellWidth);
+    grid[y][x] = this.pointer + 1;
+    return new State(grid, this.cellWidth, this.pointer);
   }
   _countLiveNeighbors(x, y) {
-    let count = 0;
+    let count = 0,
+      sum = 0;
     for (let i = x - 1; i <= x + 1; i++) {
       for (let j = y - 1; j <= y + 1; j++) {
         let row = i < 0 ? this.rows - 1 : i >= this.rows ? 0 : i;
         let col = j < 0 ? this.columns - 1 : j >= this.columns ? 0 : j;
         if (this.grid[row][col] === 0 || (i === x && j === y)) continue;
         count++;
-        // sum += this.grid[row][col];
+        sum += this.grid[row][col];
       }
     }
-    // return { count, color: Math.round(sum / count) };
-    return count;
+    return { count, color: Math.round(sum / count) };
   }
   proceedToNextGeneration() {
     const grid = Array.from(new Array(this.rows).keys()).map((_) =>
@@ -101,13 +127,14 @@ class State {
     );
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        const neighbors = this._countLiveNeighbors(i, j);
-        if (neighbors < 2 || neighbors > 3) grid[i][j] = 0;
-        else if (neighbors === 2) grid[i][j] = this.grid[i][j];
-        else grid[i][j] = 1;
+        const liveNeighbors = this._countLiveNeighbors(i, j);
+        const numOfLiveNeighbors = liveNeighbors.count;
+        if (numOfLiveNeighbors < 2 || numOfLiveNeighbors > 3) grid[i][j] = 0;
+        else if (numOfLiveNeighbors === 2) grid[i][j] = this.grid[i][j];
+        else grid[i][j] = liveNeighbors.color;
       }
     }
-    return new State(grid, this.cellWidth);
+    return new State(grid, this.cellWidth, this.pointer);
   }
 }
 
@@ -118,7 +145,10 @@ const init = () => {
   const clearButton = document.querySelector(".clear");
   const nextButton = document.querySelector(".next");
   const slider = document.querySelector("#range");
+  const timeoutDisplay = document.querySelector(".range-value");
   const cellSizeInput = document.querySelector("#cell-size");
+  const cellColorInput = document.querySelector("#cell-color");
+  const bgColorInput = document.querySelector("#bg-color");
 
   let painting = false;
   let running = null;
@@ -136,8 +166,12 @@ const init = () => {
     display.syncState(state);
   };
 
-  const display = CanvasDisplay.start(parent, cellSizeInput.value);
-  let state = State.fromDisplay(display);
+  let display = CanvasDisplay.start(
+    parent,
+    cellSizeInput.value,
+    cellColorInput.value
+  );
+  let state = State.fromDisplay(display, 0);
   display.syncState(state);
 
   //! Beware Closure but Not a pure function
@@ -179,7 +213,7 @@ const init = () => {
     stopButton.disabled = true;
   });
   clearButton.addEventListener("click", () => {
-    state = State.fromDisplay(display);
+    state = State.fromDisplay(display, state.pointer);
     display.syncState(state);
     clearInterval(running);
     running = null;
@@ -188,198 +222,35 @@ const init = () => {
   });
   nextButton.addEventListener("click", simulate);
 
-  window.addEventListener("resize", () => display.resizeDisplay());
+  window.addEventListener("resize", () => {
+    display = display.resizeDisplay();
+    state = State.fromDisplay(display, state.pointer);
+  });
+
+  slider.addEventListener("input", (event) => {
+    timeout = event.target.value * 50;
+    timeoutDisplay.innerText = timeout + "ms";
+    if (running) {
+      clearInterval(running);
+      running = setInterval(simulate, timeout);
+    }
+  });
+  cellColorInput.addEventListener("change", (event) => {
+    state.colorPointer = state.pointer + 1;
+    display.cellColor = event.target.value;
+  });
+  bgColorInput.addEventListener("change", (event) => {
+    display.bgColor = event.target.value;
+    display.syncState(state);
+  });
+  cellSizeInput.addEventListener("change", (event) => {
+    display.cellSize = event.target.value;
+    state = State.fromDisplay(display, state.pointer);
+    display.syncState(state);
+  });
 };
 
 window.addEventListener("DOMContentLoaded", init);
 
-//! ============Rules================
-//* 1. Any live cell with fewer than 2 or more than 3 live neighbors dies
-//* 2. Any live cell with 2 or 3 live neighbors lives
-//* 3. Any dead cell with exactly 3 live neighbors becomes alive
-
 //todo follow these steps for easing the canvas frames
 // link => https://css-tricks.com/easing-animations-in-canvas/
-
-// const cellSizeInput = document.querySelector("#cell-size");
-// const cellColorInput = document.querySelector("#cell-color");
-// const bgColorInput = document.querySelector("#bg-color");
-
-// const canvas = document.getElementById("canvas");
-// const ctx = canvas.getContext("2d");
-// let bgColor = bgColorInput.value;
-// let boxWidth = parseInt(cellSizeInput.value);
-// let canvasWidth;
-// if (window.innerWidth > 768) {
-//   canvasWidth =
-//     Math.floor((window.innerWidth - 20 * 2 - 300) / boxWidth) * boxWidth;
-// } else {
-//   canvasWidth = Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
-// }
-// let canvasHeight =
-//   Math.floor((window.innerHeight * 0.75 - 20 * 2) / boxWidth) * boxWidth;
-// canvas.width = canvasWidth;
-// canvas.height = canvasHeight;
-// let numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
-// let numberOfVerticalBoxes = Math.floor(canvasHeight / boxWidth);
-
-// bgColorInput.addEventListener("change", (event) => {
-//   bgColor = event.target.value;
-//   draw(table);
-// });
-
-// cellSizeInput.addEventListener("change", (event) => {
-//   clear();
-//   boxWidth = parseInt(event.target.value);
-//   if (window.innerWidth > 768) {
-//     canvasWidth =
-//       Math.floor((window.innerWidth - 20 * 2 - 300) / boxWidth) * boxWidth;
-//   } else {
-//     canvasWidth =
-//       Math.floor((window.innerWidth - 20 * 2) / boxWidth) * boxWidth;
-//   }
-//   canvasHeight =
-//     Math.floor((window.innerHeight * 0.75 - 20 * 2) / boxWidth) * boxWidth;
-//   canvas.width = canvasWidth;
-//   canvas.height = canvasHeight;
-//   numberOfHorizontalBoxes = Math.floor(canvasWidth / boxWidth);
-//   numberOfVerticalBoxes = Math.floor(canvasHeight / boxWidth);
-//   table = generateEmptyGrid();
-//   draw(table);
-// });
-
-// function generateEmptyGrid() {
-//   return Array.from(new Array(numberOfVerticalBoxes).keys()).map((_) =>
-//     Array.from(new Array(numberOfHorizontalBoxes).keys()).map((_) => 0)
-//   );
-// }
-
-// let table = generateEmptyGrid();
-
-// const startButton = document.querySelector(".start");
-// const stopButton = document.querySelector(".stop");
-// const clearButton = document.querySelector(".clear");
-// const nextButton = document.querySelector(".next");
-// const slider = document.querySelector("#range");
-
-// const timeoutValue = document.querySelector(".range-value");
-
-// window.addEventListener("resize", (event) => {
-//
-// });
-
-// let running = null;
-// let painting = false;
-// let timeout = slider.value * 50;
-// let cellColors = [];
-// cellColors.push(cellColorInput.value);
-// let pointer = 0;
-
-// cellColorInput.addEventListener("change", (event) => {
-//   cellColors.push(event.target.value);
-//   pointer++;
-// });
-
-// slider.addEventListener("input", (event) => {
-//   timeout = event.target.value * 50;
-//   timeoutValue.innerText = timeout + "ms";
-//   if (running) {
-//     clearInterval(running);
-//     running = setInterval(startSimulation, timeout);
-//   }
-// });
-
-// function startSimulation() {
-//   table = nextGeneration(table);
-//   draw(table);
-// }
-
-// startButton.addEventListener("click", (event) => {
-//   if (running) return;
-
-//   running = setInterval(startSimulation, timeout);
-//   startButton.disabled = true;
-//   stopButton.disabled = false;
-// });
-
-// stopButton.addEventListener("click", (event) => {
-//   if (!running) return;
-//   clearInterval(running);
-//   running = null;
-//   startButton.disabled = false;
-//   stopButton.disabled = true;
-// });
-
-// function clear() {
-//   table = generateEmptyGrid();
-//   draw(table);
-//   clearInterval(running);
-//   running = null;
-//   startButton.disabled = false;
-//   stopButton.disabled = true;
-// }
-
-// clearButton.addEventListener("click", clear);
-// nextButton.addEventListener("click", (event) => {
-//   table = nextGeneration(table);
-//   draw(table);
-// });
-
-//
-// canvas.addEventListener("touchstart", startPopulatingGrid);
-// canvas.addEventListener("touchmove", populateGrid);
-// canvas.addEventListener("touchend", stopDrawing);
-// canvas.addEventListener("touchcancel", stopDrawing);
-// canvas.addEventListener("mousedown", startPopulatingGrid);
-// canvas.addEventListener("mousemove", populateGrid);
-// canvas.addEventListener("mouseup", stopDrawing);
-
-// function draw(arr) {
-//   ctx.fillStyle = bgColor;
-//   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-//   arr.forEach((array, i) => {
-//     array.forEach((element, j) => {
-//       ctx.fillStyle = cellColors[Math.max(element - 1, 0)];
-//       if (element) ctx.fillRect(j * boxWidth, i * boxWidth, boxWidth, boxWidth);
-//     });
-//   });
-// }
-
-// function countLiveNeighbors(x, y, table) {
-//   let count = 0;
-//   let sum = 0;
-//   for (let i = x - 1; i <= x + 1; i++) {
-//     for (let j = y - 1; j <= y + 1; j++) {
-//       let row =
-//         i < 0 ? numberOfVerticalBoxes - 1 : i >= numberOfVerticalBoxes ? 0 : i;
-//       let col =
-//         j < 0
-//           ? numberOfHorizontalBoxes - 1
-//           : j >= numberOfHorizontalBoxes
-//           ? 0
-//           : j;
-//       // console.log(row, col);
-//       if (table[row][col] === 0 || (i === x && j === y)) continue;
-//       count++;
-//       sum += table[row][col];
-//     }
-//   }
-//   return { count, color: Math.round(sum / count) };
-// }
-
-// function nextGeneration(table) {
-//   let grid = generateEmptyGrid();
-//   for (let i = 0; i < numberOfVerticalBoxes; i++) {
-//     for (let j = 0; j < numberOfHorizontalBoxes; j++) {
-//       const neighbors = countLiveNeighbors(i, j, table);
-//       const numOfNeighbors = neighbors.count;
-//       if (numOfNeighbors < 2 || numOfNeighbors > 3) grid[i][j] = 0;
-//       else if (numOfNeighbors === 2) grid[i][j] = table[i][j];
-//       //todo need to plan the color swaps
-//       else grid[i][j] = neighbors.color;
-//     }
-//   }
-//   return grid;
-// }
-
-// draw(table);
