@@ -1,9 +1,13 @@
-# game-of-life
+# Game Of Life Simulator!
 
-![demo image](https://i.imgur.com/pXr665L.gif)
+![Demo Simulation](https://i.imgur.com/yG47Azc.gif)
 
-This is a minimal implementation of the infamous Conway's Game of Life simulation using only HTML, CSS, JavaScript. Users can interact with the simulation and adjust the speed of animation.
+## Conway's Game Of Life
 
-For sources I have followed:-
-https://academo.org/demos/conways-game-of-life/
-https://playgameoflife.com
+The Game of Life, also known simply as Life, is a cellular automaton devised by the British mathematician John Horton Conway in 1970. It is a zero-player game, meaning that its evolution is determined by its initial state, requiring no further input. One interacts with the Game of Life by creating an initial configuration and observing how it evolves. It is Turing complete and can simulate a universal constructor or any other Turing machine.
+
+## Reference:-
+
+- https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+- https://academo.org/demos/conways-game-of-life/
+- https://playgameoflife.com
